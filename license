@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+
+base_url="https://raw.githubusercontent.com/unamatasanatarai/license/master"
+index_url="${base_url}/metadata/index.txt"
+license_base_url="${base_url}/licenses"
+
+connect_timeout=10
+max_time=30
+
+cmd="$1"
+
+if ! command -v curl >/dev/null 2>&1; then
+	printf '%s\n' 'curl is required' >&2
+	exit 1
+fi
+
+case "$cmd" in
+"" | -h | --help | help)
+	cat <<EOF
+usage: ${0##*/} <command>
+
+commands:
+  list     - list available licenses
+  download - download a license to LICENSE file in the current directory
+
+example usage:
+  ${0##*/} list
+  ${0##*/} download MIT
+EOF
+	exit 0
+	;;
+esac
+
+index_tmp="$(mktemp "${TMPDIR:-/tmp}/license-index.$$")"
+
+if [ ! -f "$index_tmp" ]; then
+	printf '%s\n' 'failed to create temporary file' >&2
+	exit 1
+fi
+
+curl \
+	--silent \
+	--show-error \
+	--fail \
+	--location \
+	--connect-timeout "$connect_timeout" \
+	--max-time "$max_time" \
+	--output "$index_tmp" \
+	"$index_url"
+
+status="$?"
+
+if [ "$status" -ne 0 ]; then
+	rm -f "$index_tmp"
+	printf '%s\n' 'failed to fetch license index' >&2
+	exit 3
+fi
+
+if [ ! -s "$index_tmp" ]; then
+	rm -f "$index_tmp"
+	printf '%s\n' 'license index is empty' >&2
+	exit 3
+fi
+
+case "$cmd" in
+list)
+	while IFS= read -r line; do
+		[ -n "$line" ] || continue
+		printf '%s\n' "$line"
+	done <"$index_tmp"
+
+	rm -f "$index_tmp"
+	exit 0
+	;;
+
+download)
+	license_name="$2"
+
+	if [ -z "$license_name" ]; then
+		rm -f "$index_tmp"
+		printf '%s\n' 'missing license identifier' >&2
+		exit 2
+	fi
+
+	if [[ ! "$license_name" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+		rm -f "$index_tmp"
+		printf '%s\n' 'invalid license identifier' >&2
+		exit 2
+	fi
+
+	case "$license_name" in
+	.* | */* | *\\* | *..*)
+		rm -f "$index_tmp"
+		printf '%s\n' 'invalid license identifier' >&2
+		exit 2
+		;;
+	esac
+
+	found=0
+
+	while IFS= read -r line; do
+		if [ "$line" = "$license_name" ]; then
+			found=1
+			break
+		fi
+	done <"$index_tmp"
+
+	rm -f "$index_tmp"
+
+	if [ "$found" -ne 1 ]; then
+		printf '%s\n' "license not found: ${license_name}" >&2
+		exit 4
+	fi
+
+	license_tmp="$(mktemp "${TMPDIR:-/tmp}/license-file.$$")"
+
+	if [ ! -f "$license_tmp" ]; then
+		printf '%s\n' 'failed to create temporary file' >&2
+		exit 1
+	fi
+
+	curl \
+		--silent \
+		--show-error \
+		--fail \
+		--location \
+		--connect-timeout "$connect_timeout" \
+		--max-time "$max_time" \
+		--output "$license_tmp" \
+		"${license_base_url}/${license_name}"
+
+	status="$?"
+
+	if [ "$status" -ne 0 ]; then
+		rm -f "$license_tmp"
+		printf '%s\n' 'failed to download license' >&2
+		exit 3
+	fi
+
+	if [ ! -s "$license_tmp" ]; then
+		rm -f "$license_tmp"
+		printf '%s\n' 'downloaded license is empty' >&2
+		exit 1
+	fi
+
+	mv "$license_tmp" "LICENSE"
+
+	status="$?"
+
+	if [ "$status" -ne 0 ]; then
+		rm -f "$license_tmp"
+		printf '%s\n' 'failed to save output file' >&2
+		exit 1
+	fi
+
+	printf '%s\n' "downloaded ${license_name} -> LICENSE"
+	exit 0
+	;;
+
+*)
+	rm -f "$index_tmp"
+	printf '%s\n' "unknown command: ${cmd}" >&2
+	exit 2
+	;;
+esac
