@@ -1,22 +1,21 @@
 #!/usr/bin/env bash
 
-# Set PATH to include the directory where the licenses-* scripts are located
 export PATH="$(dirname "$0"):$PATH"
 
 cmd="$1"
 
 case "$cmd" in
 "" | list)
-    licenses-list
-    ;;
+	licenses-list
+	;;
 get)
-    licenses-get "$2"
-    ;;
+	licenses-get "$2"
+	;;
 update)
-    licenses-update
-    ;;
+	licenses-update
+	;;
 -h | --help | help)
-    cat <<EOF
+	cat <<EOF
 usage: ${0##*/} <command>
 
 commands:
@@ -29,10 +28,10 @@ example usage:
   ${0##*/} list
   ${0##*/} get MIT
 EOF
-    exit 0
-    ;;
+	exit 0
+	;;
 *)
-    printf 'unknown command: %s\n' "$cmd" >&2
-    exit 1
-    ;;
+	printf 'unknown command: %s\n' "$cmd" >&2
+	exit 1
+	;;
 esac
