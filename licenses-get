@@ -15,9 +15,9 @@ if [[ ! -f "$__license_path" ]]; then
     exit 1
 fi
 
-cp "$__license_path" LICENSE || {
-    printf 'failed to copy license file\n' >&2
+cp "$__license_path" "$PWD/LICENSE" || {
+    printf 'failed to copy license file to %s/LICENSE\n' "$PWD" >&2
     exit 1
 }
 
-printf 'copied %s to LICENSE\n' "$__license_id"
+printf 'copied %s to %s/LICENSE\n' "$__license_id" "$PWD"
