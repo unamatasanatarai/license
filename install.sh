@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 install_dir="${XDG_BIN_HOME:-${HOME}/.local/bin}"
-base_url="https://raw.githubusercontent.com/unamatasanatarai/license/master"
+base_url="https://raw.githubusercontent.com/unamatasanatarai/licenses/master"
 
 files=("licenses" "licenses-list" "licenses-get" "licenses-update")
 
