@@ -69,4 +69,4 @@ esac
 printf '\n%s\n' 'usage:'
 printf '%s\n' '  licenses update'
 printf '%s\n' '  licenses list'
-printf '%s\n' '  licenses get MIT'
+printf '%s\n' '  licenses mit'
