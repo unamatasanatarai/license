@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Run the reindex script from the root of the repository
+if [[ -x "./reindex.sh" ]]; then
+    ./reindex.sh
+    git add metadata/index.txt
+else
+    printf 'error: reindex.sh not found or not executable\n' >&2
+    exit 1
+fi

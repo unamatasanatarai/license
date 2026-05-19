@@ -5,7 +5,18 @@ export PATH="$(dirname "$0"):$PATH"
 cmd="$1"
 
 case "$cmd" in
-"" | list)
+"")
+    if command -v peco >/dev/null 2>&1; then
+        selected_license=$(licenses-list | peco)
+        if [[ -n "$selected_license" ]]; then
+            licenses-get "$selected_license"
+        fi
+    else
+        printf 'error: peco is not installed. Install peco or run: %s <license-id>\n' "${0##*/}" >&2
+        exit 1
+    fi
+    ;;
+list)
     licenses-list
     ;;
 get)
@@ -19,6 +30,7 @@ update)
 usage: ${0##*/} [command | license-id]
 
 commands:
+  (empty) - interactive selection using peco
   list   - list available licenses (local cache)
   get    - copy a license to LICENSE file
   update - download/sync all available licenses
