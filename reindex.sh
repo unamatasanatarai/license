@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 __index_file="metadata/index.txt"
-__license_dir="license-templates"
+__license_dir="licenses-templates"
 
 [[ -d "$__license_dir" ]] || {
 	printf 'error: directory not found: %s\n' "$__license_dir" >&2

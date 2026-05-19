@@ -1,6 +1,7 @@
 agpl3
-apache-2.0
+apache2
 boost
+bsd2-simplified
 cc0
 eclipse2
 gpl2

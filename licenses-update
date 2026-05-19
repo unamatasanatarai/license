@@ -2,7 +2,7 @@
 
 base_url="https://raw.githubusercontent.com/unamatasanatarai/licenses/master"
 index_url="${base_url}/metadata/index.txt"
-license_base_url="${base_url}/license-templates"
+license_base_url="${base_url}/licenses-templates"
 
 data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/licenses"
 
@@ -10,41 +10,41 @@ connect_timeout=10
 max_time=30
 
 mkdir -p "$data_dir" || {
-    printf 'failed to create directory: %s\n' "$data_dir" >&2
-    exit 1
+	printf 'failed to create directory: %s\n' "$data_dir" >&2
+	exit 1
 }
 
 index_tmp="$(mktemp "${TMPDIR:-/tmp}/license-index.$$")"
 
 curl \
-    --silent \
-    --show-error \
-    --fail \
-    --location \
-    --connect-timeout "$connect_timeout" \
-    --max-time "$max_time" \
-    --output "$index_tmp" \
-    "$index_url"
+	--silent \
+	--show-error \
+	--fail \
+	--location \
+	--connect-timeout "$connect_timeout" \
+	--max-time "$max_time" \
+	--output "$index_tmp" \
+	"$index_url"
 
 status="$?"
 if [ "$status" -ne 0 ]; then
-    rm -f "$index_tmp"
-    printf 'failed to fetch license index\n' >&2
-    exit 3
+	rm -f "$index_tmp"
+	printf 'failed to fetch license index\n' >&2
+	exit 3
 fi
 
 while IFS= read -r name || [ -n "$name" ]; do
-    [ -n "$name" ] || continue
-    printf 'updating: %s\n' "$name"
-    curl \
-        --silent \
-        --show-error \
-        --fail \
-        --location \
-        --connect-timeout "$connect_timeout" \
-        --max-time "$max_time" \
-        --output "${data_dir}/${name}" \
-        "${license_base_url}/${name}"
+	[ -n "$name" ] || continue
+	printf 'updating: %s\n' "$name"
+	curl \
+		--silent \
+		--show-error \
+		--fail \
+		--location \
+		--connect-timeout "$connect_timeout" \
+		--max-time "$max_time" \
+		--output "${data_dir}/${name}" \
+		"${license_base_url}/${name}"
 done <"$index_tmp"
 
 rm -f "$index_tmp"
